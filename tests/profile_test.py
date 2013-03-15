@@ -17,5 +17,11 @@ cRun_test()
 end = datetime.now()
 deltas['cython'] = end - start
 
-from pprint import pprint
-pprint([(k, v.total_seconds()) for k, v in deltas.items()])
+runtimes = OrderedDict([(k, v.total_seconds()) for k, v in deltas.items()])
+
+format_str = '  %%%ds: %%s seconds' % max([len(k) for k in runtimes])
+
+message = '\n'.join([format_str % item
+                     for item in runtimes.iteritems()])
+print 'Runtimes:'
+print message
