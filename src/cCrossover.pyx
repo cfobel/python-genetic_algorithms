@@ -46,7 +46,7 @@ class SwapGenerator(object):
         b_r, a_r = r['b'], r['a']
 
         for key in swap_order:
-            swap = {'key': key, 'source': a_map[key]}
+            swap = {'source': a_map[key]}
             if key in b_map:
                 # The corresponding key is present in the `b` map, so select
                 # the corresponding value as the target.
@@ -79,7 +79,7 @@ class SwapGenerator(object):
         # we can be sure that the key from map `b` will be unoccupied in map
         # `a` at this point.
         for key in to_move.values():
-            swap = {'key': key, 'source': a_map[key]}
+            swap = {'source': a_map[key]}
             swap['source_element'] = key
             swap['target'] = None
             swap['target_element'] = b_r[swap['source']]
