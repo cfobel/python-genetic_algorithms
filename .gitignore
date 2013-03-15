@@ -1,3 +1,4 @@
 *.so
 *.pyc
+src/cCrossover.c
 build
