@@ -23,9 +23,6 @@ class SwapGenerator(object):
         self.reset_reverse_map('b')
 
     def reset(self):
-        # Make a local copy of the from_map since we will be modifying it
-        self.m = deepcopy(self.maps['a'])
-
         # Make a copy of parent as a starting point
         self.reset_reverse_map('a')
         self._dirty = False
@@ -42,16 +39,14 @@ class SwapGenerator(object):
 
         swap_order = self.swap_order[:]
         to_move = OrderedDict()
-        to_move_count = 0
 
+        a_map = self.maps['a']
         b_map = self.maps['b']
         r = self.reverse_maps
         b_r, a_r = r['b'], r['a']
 
-        while len(swap_order) > 0:
-            key = swap_order.pop(0)
-
-            swap = {'key': key, 'source': self.m[key]}
+        for key in swap_order:
+            swap = {'key': key, 'source': a_map[key]}
             if key in b_map:
                 # The corresponding key is present in the `b` map, so select
                 # the corresponding value as the target.
@@ -61,7 +56,6 @@ class SwapGenerator(object):
                 # postpone until the end, but re-adding the key to the end of
                 # the swap order.
                 to_move[key] = key
-                to_move_count += 1
                 continue
 
             if swap['source'] == swap['target']:
@@ -70,8 +64,8 @@ class SwapGenerator(object):
             swap['source_element'] = a_r[swap['source']]
             swap['target_element'] = a_r[swap['target']]
 
-            self.m[swap['source_element']] = swap['target']
-            self.m[swap['target_element']] = swap['source']
+            a_map[swap['source_element']] = swap['target']
+            a_map[swap['target_element']] = swap['source']
             a_r[swap['source']], a_r[swap['target']] = a_r[swap['target']], a_r[swap['source']]
 
             yield swap
@@ -85,13 +79,13 @@ class SwapGenerator(object):
         # we can be sure that the key from map `b` will be unoccupied in map
         # `a` at this point.
         for key in to_move.values():
-            swap = {'key': key, 'source': self.m[key]}
+            swap = {'key': key, 'source': a_map[key]}
             swap['source_element'] = key
             swap['target'] = None
             swap['target_element'] = b_r[swap['source']]
 
-            del self.m[swap['source_element']]
-            self.m[swap['target_element']] = swap['source']
+            del a_map[swap['source_element']]
+            a_map[swap['target_element']] = swap['source']
             r['a'][swap['source']] = swap['target_element']
 
             yield swap
@@ -133,9 +127,11 @@ class ConfinedSwapCrossover(object):
         opposite = {'a': 'b', 'b': 'a'}
 
         for label in ['a', 'b']:
+            m = self.maps[label]
+            opposite_p = self.p[opposite[label]]
             for i, element in enumerate(self.p[label]):
-                if self.p[opposite[label]][i] != element:
-                    self.maps[label][element] = i
+                if opposite_p[i] != element:
+                    m[element] = i
 
     def do_swaps(self, count=None, seed=0):
         return do_swaps(self.maps, count, seed=seed)
